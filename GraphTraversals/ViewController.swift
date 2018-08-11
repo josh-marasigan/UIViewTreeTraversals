@@ -54,8 +54,9 @@ extension ViewController {
     private func onTapFindAncestor() {
         let rootView = self.graphVC.treeView
         if let first = rootView.subviews.last?.subviews.first?.subviews.last,
-            let second = rootView.subviews.first?.subviews.last {
+            let second = rootView.subviews.last?.subviews.first?.subviews.first {
             
+//            if let commonAncestor = self.findFirstCommonAncestors(first, UIView()) {
             if let commonAncestor = self.findFirstCommonAncestors(first, second) {
                 print("Common ancestor found w/ tag = \(commonAncestor.tag)")
             } else {
@@ -65,6 +66,10 @@ extension ViewController {
     }
     
     private func findFirstCommonAncestors(_ first: UIView, _ second: UIView) -> UIView? {
+        guard first.subviews.count > 0, second.subviews.count > 0 else {
+            return nil
+        }
+        
         print(first.debugDescription)
         print(second.debugDescription)
         
@@ -87,11 +92,16 @@ extension ViewController {
         
         var firstTailIndex = first.count - 1
         var secondTailIndex = second.count - 1
+        
         var commonAncestor: UIView? = nil
+        
         while firstTailIndex >= 0 && secondTailIndex >= 0 {
-            if first[firstTailIndex].tag != second[secondTailIndex].tag {
+            if first[firstTailIndex] != second[secondTailIndex] {
+                
                 // Found parent
-                if firstTailIndex + 1 < first.count {
+                if firstTailIndex + 1 < first.count,
+                    secondTailIndex + 1 < second.count,
+                    first[firstTailIndex + 1].tag == second[secondTailIndex + 1].tag {
                     commonAncestor = first[firstTailIndex + 1]
                 }
                 
@@ -102,12 +112,8 @@ extension ViewController {
             secondTailIndex -= 1
         }
         
-        if firstTailIndex > 0, secondTailIndex == 0, second.count > 0 {
-            return second[secondTailIndex + 1]
-        }
-        
-        if secondTailIndex > 0, firstTailIndex == 0, first.count > 0 {
-            return first[firstTailIndex + 1]
+        if firstTailIndex == secondTailIndex, firstTailIndex == -1 {
+            commonAncestor = first[0]
         }
         
         return commonAncestor
